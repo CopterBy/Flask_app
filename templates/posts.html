@@ -1,3 +1,5 @@
+# posts.html
+
 {% extends 'base.html' %}
 
 {% block title %}
@@ -7,7 +9,19 @@
 {% block body %}
 <div class="container">
     <h1>Статьи на сайте</h1>
-    {{ articles[0].title }}
+    {% if articles|length > 0 %}
+        {% for el in articles %}
+            <div class="alert alert-info">
+                <h2>{{ el.title }}</h2>
+                <p>{{ el.intro }}</p>
+                <p><b>Дата:{{ el.date.date() }}</b></p>
+                <a href="/posts/{{ el.id }}" class="btn btn-warning">Подробно</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>На сайте еще нет статей</p>
+    {% endif %}
+
 </div>
 
 {% endblock %}

@@ -17,7 +17,6 @@ class Article(db.Model):
     def __repr__(self):
         return '<Article %r' % self.id
 
-
 @app.route('/')
 @app.route('/home')
 def index():
@@ -31,8 +30,42 @@ def about():
 
 @app.route('/posts')
 def posts():
-    articles = Article.query.order_by(Article.date).all()
+    articles = Article.query.order_by(Article.date.desc()).all()
     return render_template('posts.html', articles=articles)
+
+@app.route('/posts/<int:id>')
+def posts_detail(id):
+    article = Article.query.get(id)
+    return render_template('posts_detail.html', article=article)
+
+
+@app.route('/posts/<int:id>/delete')
+def posts_delete(id):
+    article = Article.query.get_or_404(id)
+    try:
+        db.session.delete(article)
+        db.session.commit()
+        return redirect('/posts')
+    except:
+        return 'Ошибка удаления статьи'
+
+
+@app.route('/posts/<int:id>/update', methods=['POST', 'GET'])
+def update_article(id):
+    article = Article.query.get(id)
+    if request.method == 'POST':
+        article.title = request.form['title']
+        article.intro = request.form['intro']
+        article.text = request.form['text']
+
+        try:
+            db.session.commit()
+            return redirect('/posts')
+        except:
+            return 'Ошибка редактирования статьи'
+    else:
+        article = Article.query.get(id)
+        return render_template('update-article.html', article=article)
 
 
 @app.route('/create-article', methods=['POST', 'GET'])
@@ -46,12 +79,11 @@ def create_article():
         try:
             db.session.add(article)
             db.session.commit()
-            return redirect('/')
+            return redirect('/posts')
         except:
             return 'Ошибка добавления статьи'
     else:
         return render_template('create-article.html')
-
 
 
 @app.route('/login')
